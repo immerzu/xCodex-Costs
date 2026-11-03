@@ -1,29 +1,32 @@
-# xCodex Costs (ChatGPT)
+# xCodex Costs
 
 Userscript für **Tampermonkey**: zeigt im ChatGPT-Web (chatgpt.com) ein schwebendes Badge
-mit den beiden Planlimits — **5-Stunden-Limit** und **wöchentliches Limit**.
+mit beiden Planlimits — **5-Stunden-Limit** und **wöchentliches Limit** — plus einem
+Tagesbudget für heute.
 
-```
-⚡ 5h   54% · Mo 11:06
-●  Wo.  22% · Mi 08:08
-Ø       11%
-```
+![Badge](docs/badge.png)
 
-- Zeile 1 = **5-Stunden-Limit**, Zeile 2 = **wöchentliches Limit**, jeweils „übrig".
-- **Vier Spalten**: Symbol | Label | Wert | Reset — Labels, Prozentwerte und Zeiten stehen
-  zeilenweise exakt untereinander.
-- `· Mo 11:06` = wann das 5-h-Fenster zurückgesetzt wird, `· Mi 08:08` dasselbe für die Woche
-  (beide im Format `Wt HH:MM`).
-- **`Ø 4%`** = wie viel des Wochenkontingents **heute noch** drin ist:
-  `übrig ÷ Resttage` ergibt die Tagesrate, davon zählt nur die Restzeit bis Mitternacht
-  (bzw. bis zum Reset, falls der früher liegt). Um 8 Uhr ist die Zahl größer als um 22 Uhr;
-  sie sinkt mit dem Verbrauch und steigt, wenn der Reset näher rückt.
-- Symbole in Statusfarbe: ⚡ für das 5-h-Limit, ● für die Woche.
-- `· Mi 08:08` = wann das Wochenlimit zurückgesetzt wird.
-- Farbe richtet sich nach dem **5-Stunden-Limit**: **grün ab 20 %**, **gelb 5–19 %**, **rot unter 5 %**.
+| Zeile | Symbol | Bedeutung |
+|---|---|---|
+| 1 | ⚡ | 5-Stunden-Limit: Rest in % · Zeitpunkt der Rücksetzung |
+| 2 | ● | Wöchentliches Limit: Rest in % · Zeitpunkt der Rücksetzung |
+| 3 | Ø | wie viel des Wochenkontingents **heute noch** drin ist |
+
+Ist das Limit erreicht, bleiben die Zahlen stehen und Zeile 3 zeigt den Status:
+
+![Limit erreicht](docs/badge-limit.png)
+
+- **`Ø`** = Tagesrate aus `übrig ÷ Resttage`, davon nur die Restzeit bis Mitternacht
+  (bzw. bis zum Reset, falls der früher liegt). Sinkt mit dem Verbrauch, steigt, wenn der
+  Reset näher rückt.
+- Farbe der Symbole nach dem **5-Stunden-Limit**: **grün ab 20 %**, **gelb 5–19 %**, **rot unter 5 %**.
+- Raster: Labels, Prozentwerte und Zeiten stehen zeilenweise exakt untereinander.
+- `· Mo 11:06` / `· Mi 08:08` = Rücksetz-Zeitpunkte (Format `Wt HH:MM`).
+- **Limit erreicht:** `⊘ Limit · N Gutscheine` — man sieht, welches Fenster leer ist und ob
+  Reset-Gutscheine bereitliegen.
 - Bricht das Badge mit dem Eingabefeld an, rutscht es automatisch darüber.
 - Tooltip (Maus darüber) zeigt beide Limits mit Verbrauch, Restzeit, Reset-Zeitpunkt,
-  Plan, Credits und Reset-Gutscheine.
+  Plan, Credits und den Ablauf der Reset-Gutscheine.
 
 ## Wie es funktioniert
 
