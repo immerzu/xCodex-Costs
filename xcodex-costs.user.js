@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xCodex Costs
 // @namespace    https://github.com/immerzu
-// @version      1.0.27
+// @version      1.0.28
 // @description  Zeigt das 5-Stunden-Limit und das wöchentliche Limit des ChatGPT-Kontos als schwebendes Badge auf chatgpt.com. Kein API-Key, keine Modellaufrufe — liest nur die Werte, die die eigene Nutzungsseite selbst abruft.
 // @description:en  Shows the 5-hour limit and the weekly limit of the ChatGPT account as a floating badge on chatgpt.com. No API key and no model calls — it only reads the values your own usage page fetches.
 // @description:ru  Показывает 5-часовой лимит и недельный лимит аккаунта ChatGPT в виде плавающего бейджа на chatgpt.com. Без API-ключа и вызовов моделей — читает только значения, которые запрашивает ваша страница использования.
@@ -521,7 +521,7 @@
         const hasPace = parts.pace !== null && parts.pace !== undefined;
         const hasStatus = !!parts.status;
         set('paceval', hasPace ? Math.round(parts.pace) + '%' : '');
-        set('statlabel', hasStatus ? parts.status.text : '');
+        set('statlabel', hasStatus ? parts.status.text : (hasPace ? 'Tag' : ''));
         set('statextra', hasStatus ? (parts.status.extra || '') : '');
         const pa = el.querySelector('[data-role="paceicon"]');
         if (pa) {
@@ -630,9 +630,11 @@
         const pace = paceLeft(data, Date.now());
         if (pace !== null) {
             const restMs = data.secondary && data.secondary.resetAt ? data.secondary.resetAt - Date.now() : 0;
-            const rate = restMs > 0 && data.secondary ? data.secondary.left / (restMs / 86400000) : 0;
-            lines.push('Ø heute: ' + Math.round(pace) + ' % (Budget ' + rate.toFixed(1).replace('.', ',')
-                + ' % pro Tag, heute zählt die Restzeit bis Mitternacht)');
+            const restTage = restMs / 86400000;
+            const rate = restMs > 0 && data.secondary ? data.secondary.left / restTage : 0;
+            lines.push('Ø pro Tag: ' + Math.round(pace) + ' % von 100 % — '
+                + (data.secondary.left | 0) + ' % Rest auf ' + restTage.toFixed(1).replace('.', ',') + ' Tage'
+                + ' (Tagesrate ' + rate.toFixed(1).replace('.', ',') + ' %)');
         }
         lines.push('');
         lines.push('Credits: ' + (data.hasCredits ? (data.creditBalance || 'vorhanden') : 'keine'));

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.28 — 2026-11-04
+
+- Die Ø-Zeile bekommt ein Label: `Ø Tag 14%` statt `Ø 14%` — im Raster unter `5h`/`Wo.`.
+  Damit ist klar, dass die Zahl das Wochenlimit **pro Tag** meint (100 % ÷ 7 Tage = 14 %).
+- Tooltip erklärt es aus: `Ø pro Tag: 14 % von 100 % — 100 % Rest auf 7,0 Tage (Tagesrate 14,3 %)`.
+
 ## 1.0.27 — 2026-11-04
 
 - **Ø-Zeile erneut korrigiert** — zurück zu `übrig ÷ Resttage` (Deckel bei `übrig`).
