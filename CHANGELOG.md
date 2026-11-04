@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.0.27 — 2026-11-04
+
+- **Ø-Zeile erneut korrigiert** — zurück zu `übrig ÷ Resttage` (Deckel bei `übrig`).
+  1.0.24 hatte die bereits vergangenen Stunden des Kalendertags abgezogen; das bestrafte
+  Nutzer, die den Tag noch nicht angefangen hatten: Bei frisch zurückgesetztem Wochenlimit
+  (100 %, 7 Tage) stand dort 9 % statt 14 %. „Heute" ist jetzt **die nächsten 24 Stunden ab
+  jetzt**, unabhängig von der Uhrzeit.
+
 ## 1.0.26 — 2026-11-03
 
 - Tooltip zeigt den **Ablauf der Reset-Gutscheine**: „2 verfügbar (nächster Ablauf 30.11., 20:40)".

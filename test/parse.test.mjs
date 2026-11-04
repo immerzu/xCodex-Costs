@@ -171,17 +171,18 @@ console.log('Pace (Ø heute)');
 const mkData = (left, resetAt) => ({ secondary: { left, resetAt } });
 const mid = new Date(2026, 10, 2, 0, 0, 0).getTime();      // 02.11.2026, 00:00 lokal
 
-// Mitternacht, noch 2 volle Tage, 22 % übrig → 11 %/Tag, heute voller Tag
+// Budget für die nächsten 24 h: 22 % auf 2 Tage → 11 %/Tag
 eq(PURE.paceLeft(mkData(22, mid + 2 * 86400000), mid), 11, 'Mitternacht, 2 Tage → 11');
 
-// 12:00, Reset in 1,5 Tagen → 22/1,5 = 14,7 %/Tag, heute nur 12 h übrig
-eq(+PURE.paceLeft(mkData(22, mid + 2 * 86400000), mid + 0.5 * 86400000).toFixed(2), 7.33, '12:00, 1,5 Tage Rest → 7,33');
+// Tageszeit ist egal: gleiche Restzeit ergibt denselben Wert
+eq(PURE.paceLeft(mkData(22, mid + 0.5 * 86400000 + 2 * 86400000), mid + 0.5 * 86400000), 11, '12:00, 2 Tage Rest → 11 (Tageszeit egal)');
+eq(PURE.paceLeft(mkData(22, mid + (23 / 24) * 86400000 + 2 * 86400000), mid + (23 / 24) * 86400000), 11, '23:00, 2 Tage Rest → 11');
 
-// 23:00, Reset in 1 Tag → 22 %/Tag, heute nur 1 h übrig
-eq(+PURE.paceLeft(mkData(22, mid + (23 / 24 + 1) * 86400000), mid + (23 / 24) * 86400000).toFixed(2), 0.92, '23:00, 1 Tag Rest → 0,92');
+// Letzter halber Tag: 10 % auf 0,5 Tage → 20, gedeckelt auf 10
+eq(PURE.paceLeft(mkData(10, mid + 0.5 * 86400000), mid), 10, 'halber Tag → Deckel bei 10');
 
-// Reset vor Mitternacht: 20:00, Reset 22:00, 10 % übrig → heute nur 2 h, Deckel 10
-eq(PURE.paceLeft(mkData(10, mid + (22 / 24) * 86400000), mid + (20 / 24) * 86400000), 10, 'Reset vor Mitternacht → Deckel');
+// Frisch zurückgesetzt: 100 % auf 7 Tage → 14,3
+eq(+PURE.paceLeft(mkData(100, mid + 7 * 86400000), mid).toFixed(1), 14.3, 'frisch: 100 % / 7 Tage → 14,3');
 
 eq(PURE.paceLeft(mkData(22, mid), mid), 0, 'Reset genau jetzt → 0');
 eq(PURE.paceLeft(mkData(22, mid - 1000), mid), 0, 'Reset vorbei → 0');

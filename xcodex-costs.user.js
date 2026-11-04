@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xCodex Costs
 // @namespace    https://github.com/immerzu
-// @version      1.0.26
+// @version      1.0.27
 // @description  Zeigt das 5-Stunden-Limit und das wöchentliche Limit des ChatGPT-Kontos als schwebendes Badge auf chatgpt.com. Kein API-Key, keine Modellaufrufe — liest nur die Werte, die die eigene Nutzungsseite selbst abruft.
 // @description:en  Shows the 5-hour limit and the weekly limit of the ChatGPT account as a floating badge on chatgpt.com. No API key and no model calls — it only reads the values your own usage page fetches.
 // @description:ru  Показывает 5-часовой лимит и недельный лимит аккаунта ChatGPT в виде плавающего бейджа на chatgpt.com. Без API-ключа и вызовов моделей — читает только значения, которые запрашивает ваша страница использования.
@@ -194,12 +194,13 @@
      * „Pace" des Wochenfensters: wie viel Prozent des Wochenkontingents **heute noch**
      * drin sind, wenn der Rest gleichmäßig über die verbleibende Zeit verteilt wird.
      *
-     *   Tagesrate  = übrig / Resttage (bis reset_at)
-     *   heute      = Tagesrate × (Rest des heutigen Kalendertags / 24 h)
+     *   Ø = übrig / Resttage (bis reset_at), höchstens `übrig`
      *
-     * Der heutige Tag zählt also nur mit seinen verbleibenden Stunden — um 8 Uhr ist
-     * die Zahl größer als um 22 Uhr. Liegt der Reset vor Mitternacht, endet „heute"
-     * dort. Ohne Wochendaten oder nach dem Reset: null bzw. 0.
+     * Das ist das Budget für die **nächsten 24 Stunden ab jetzt** — nicht für den
+     * Kalendertag. Vergangene Stunden zählen nicht mit, sonst würde jemand bestraft,
+     * der den Tag noch gar nicht genutzt hat. Am letzten Tag greift der Deckel:
+     * 3 % übrig bei 0,5 Tagen → 3 %, nicht 6 %. Ohne Wochendaten oder nach dem Reset:
+     * null bzw. 0.
      */
     function paceLeft(data, now) {
         const w = data && data.secondary;
@@ -207,14 +208,8 @@
         const t = Number.isFinite(Number(now)) ? Number(now) : Date.now();
         if (!(w.resetAt > t)) return 0;
         const restTage = (w.resetAt - t) / 86400000;
-        const ratePerDay = w.left / restTage;
-
-        const midnight = new Date(t);
-        midnight.setHours(24, 0, 0, 0);
-        const bisMitternacht = Math.min(midnight.getTime(), w.resetAt) - t;
-        const heute = ratePerDay * (Math.max(0, bisMitternacht) / 86400000);
-
-        return Math.max(0, Math.min(w.left, heute));
+        if (!(restTage > 0)) return 0;
+        return Math.max(0, Math.min(w.left, w.left / restTage));
     }
 
     /**

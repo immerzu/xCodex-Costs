@@ -23,9 +23,9 @@ Ist das Limit erreicht, bleiben die Zahlen stehen und Zeile 3 zeigt den Status:
 
 ![Limit erreicht](docs/badge-limit.png)
 
-- **`Ø`** = Tagesrate aus `übrig ÷ Resttage`, davon nur die Restzeit bis Mitternacht
-  (bzw. bis zum Reset, falls der früher liegt). Sinkt mit dem Verbrauch, steigt, wenn der
-  Reset näher rückt.
+- **`Ø`** = Tagesbudget aus `übrig ÷ Resttage`, gedeckelt auf `übrig` — gilt für die
+  **nächsten 24 Stunden ab jetzt**, nicht für den Kalendertag. Sinkt mit dem Verbrauch,
+  steigt, wenn der Reset näher rückt.
 - Farbe der Symbole nach dem **5-Stunden-Limit**: **grün ab 20 %**, **gelb 5–19 %**, **rot unter 5 %**.
 - **Limit erreicht:** `⊘ Limit · N Gutscheine` — man sieht, welches Fenster leer ist und ob
   Reset-Gutscheine bereitliegen.
