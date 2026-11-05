@@ -27,7 +27,7 @@ if (!match) {
 const PURE = new Function(
   `${match[1]}
    return { clamp, windowInfo, parseUsage, shortLabel, longLabel, fmtDur, fmtReset, fmtDate,
-            relTime, severity, badgeParts, paceLeft, parseResetCredits };`,
+            relTime, severity, badgeParts, parseResetCredits };`,
 )();
 
 // ---------------------------------------------------------------------------
@@ -148,10 +148,17 @@ eq(/^· .{2} \d{2}:\d{2}$/.test(parts.bottom.reset), true, 'Zeile 2: Reset ' + p
 const lim = PURE.badgeParts(reached);
 eq(lim.status, { text: 'Limit', extra: '' }, 'Limit erreicht → Status statt Ø');
 eq(lim.top.value, '0%', 'Limit erreicht → Zahlen bleiben stehen');
-eq(lim.pace, null, 'Limit erreicht → kein Ø-Wert');
+eq(lim.credits, null, 'Limit erreicht ohne Gutscheine → kein Gutschein-Objekt');
 eq(PURE.badgeParts({ ...reached, resetCredits: 2 }).status.extra, '· 2 Gutscheine', 'Gutscheine im Limit-Fall');
 eq(PURE.badgeParts({ ...reached, resetCredits: 1 }).status.extra, '· 1 Gutschein', 'Einzahl bei 1');
 eq(PURE.badgeParts(null).top.value, '…', 'ohne Daten');
+
+const cr = PURE.badgeParts(d).credits;
+eq(cr.label, 'Gutscheine', 'Gutschein-Zeile: Label');
+eq(cr.value, '2', 'Gutschein-Zeile: Anzahl');
+eq(PURE.badgeParts({ ...d, resetCredits: 1 }).credits.label, 'Gutschein', 'Einzahl bei 1');
+eq(PURE.badgeParts({ ...d, resetCredits: 0 }).credits, null, 'ohne Gutscheine → keine Zeile');
+eq(/^· bis \d{2}\.\d{2}\., \d{2}:\d{2}$/.test(PURE.badgeParts({ ...d, resetExpiry: Date.parse('2026-11-30T19:40:33Z') }).credits.extra), true, 'Ablauf in der Zeile');
 
 const ohneReset = PURE.parseUsage({
   rate_limit: {
@@ -162,32 +169,11 @@ const ohneReset = PURE.parseUsage({
 eq(PURE.badgeParts(ohneReset), {
   top: { label: '5h', value: '80%', reset: '' },
   bottom: { label: 'Wo.', value: '70%', reset: '' },
-  pace: null,
-  status: null
+  status: null,
+  credits: null
 }, 'ohne reset_at → keine Reset-Spalten und kein Ø');
 
 // ---------------------------------------------------------------------------
-console.log('Pace (Ø heute)');
-const mkData = (left, resetAt) => ({ secondary: { left, resetAt } });
-const mid = new Date(2026, 10, 2, 0, 0, 0).getTime();      // 02.11.2026, 00:00 lokal
-
-// Budget für die nächsten 24 h: 22 % auf 2 Tage → 11 %/Tag
-eq(PURE.paceLeft(mkData(22, mid + 2 * 86400000), mid), 11, 'Mitternacht, 2 Tage → 11');
-
-// Tageszeit ist egal: gleiche Restzeit ergibt denselben Wert
-eq(PURE.paceLeft(mkData(22, mid + 0.5 * 86400000 + 2 * 86400000), mid + 0.5 * 86400000), 11, '12:00, 2 Tage Rest → 11 (Tageszeit egal)');
-eq(PURE.paceLeft(mkData(22, mid + (23 / 24) * 86400000 + 2 * 86400000), mid + (23 / 24) * 86400000), 11, '23:00, 2 Tage Rest → 11');
-
-// Letzter halber Tag: 10 % auf 0,5 Tage → 20, gedeckelt auf 10
-eq(PURE.paceLeft(mkData(10, mid + 0.5 * 86400000), mid), 10, 'halber Tag → Deckel bei 10');
-
-// Frisch zurückgesetzt: 100 % auf 7 Tage → 14,3
-eq(+PURE.paceLeft(mkData(100, mid + 7 * 86400000), mid).toFixed(1), 14.3, 'frisch: 100 % / 7 Tage → 14,3');
-
-eq(PURE.paceLeft(mkData(22, mid), mid), 0, 'Reset genau jetzt → 0');
-eq(PURE.paceLeft(mkData(22, mid - 1000), mid), 0, 'Reset vorbei → 0');
-eq(PURE.paceLeft(ohneReset, mid), null, 'kein Wochenfenster → null');
-
 console.log('Reset-Gutscheine');
 const creditsFixture = {
   credits: [
@@ -199,8 +185,8 @@ const creditsFixture = {
 const rc = PURE.parseResetCredits(creditsFixture);
 eq(rc.count, 2, 'nur verfügbare zählen');
 eq(rc.nextExpiry, Date.parse('2026-11-30T19:40:33.960710Z'), 'frühester Ablauf');
-eq(PURE.parseResetCredits({}), { count: 0, nextExpiry: null }, 'leere Antwort');
-eq(PURE.parseResetCredits(null), { count: 0, nextExpiry: null }, 'null');
+eq(PURE.parseResetCredits({}).count, 0, 'leere Antwort: keine Gutscheine');
+eq(PURE.parseResetCredits(null).items.length, 0, 'null: keine Gutscheine');
 eq(/^\d{2}\.\d{2}\., \d{2}:\d{2}$/.test(PURE.fmtDate(Date.parse('2026-11-30T19:40:33Z'))), true, 'Format „TT.MM., HH:MM"');
 eq(PURE.fmtDate(0), '', '0 → leer');
 

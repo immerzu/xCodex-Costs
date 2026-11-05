@@ -3,7 +3,7 @@
 [Deutsch](#deutsch) · [Русский](#русский) · [English](#english)
 
 Userscript für **Tampermonkey**: 5-Stunden-Limit und wöchentliches Limit des ChatGPT-Kontos
-als schwebendes Badge auf **chatgpt.com** — plus Tagesbudget für heute.
+als schwebendes Badge auf **chatgpt.com** — plus die vorhandenen Reset-Gutscheine mit Ablauf.
 
 ![Badge](docs/badge.png)
 
@@ -17,13 +17,13 @@ Drei Zeilen, ein Raster: Symbol | Label | Wert | Reset-Zeitpunkt.
 |---|---|---|
 | 1 | ⚡ | 5-Stunden-Limit: Rest in % · Zeitpunkt der Rücksetzung |
 | 2 | ● | Wöchentliches Limit: Rest in % · Zeitpunkt der Rücksetzung |
-| 3 | Ø | Tagesrate: wie viel vom Wochenlimit **pro Tag** drin ist |
+| 3 | ▣ | Reset-Gutscheine: Anzahl · Ablauf des nächsten |
 
 Ist das Limit erreicht, bleiben die Zahlen stehen und Zeile 3 zeigt den Status:
 
 ![Limit erreicht](docs/badge-limit.png)
 
-- **`Ø Tag`** = `übrig ÷ Resttage`, gedeckelt auf `übrig`: so viel des Wochenlimits kannst du** pro Tag** verbrauchen, damit es bis zum Reset reicht (bei 100 % / 7 Tage → 14 %). Sinkt mit dem Verbrauch, steigt, wenn der Reset näher rückt.
+- **`▣ Gutscheine 2 · bis 30.11., 20:40`** = so viele kostenlose Limit-Resets liegen bereit, der nächste verfällt zu diesem Zeitpunkt. Der Tooltip listet für jeden Gutschein Vergabe- und Ablaufdatum.
 - Farbe der Symbole nach dem **5-Stunden-Limit**: **grün ab 20 %**, **gelb 5–19 %**, **rot unter 5 %**.
 - **Limit erreicht:** `⊘ Limit · N Gutscheine` — man sieht, welches Fenster leer ist und ob
   Reset-Gutscheine bereitliegen.
@@ -51,13 +51,13 @@ startet dort **kein** Userscript und das Badge bleibt unsichtbar.
 |---|---|---|
 | 1 | ⚡ | 5-часовой лимит: остаток в % · время сброса |
 | 2 | ● | Недельный лимит: остаток в % · время сброса |
-| 3 | Ø | дневная норма: сколько от недельного лимита доступно **в день** |
+| 3 | ▣ | подарочные сбросы: количество · срок ближайшего |
 
 Если лимит исчерпан, числа остаются, а третья строка показывает статус:
 
 ![Лимит исчерпан](docs/badge-limit.png)
 
-- **`Ø Tag`** — `остаток ÷ дни до сброса`, но не больше остатка: столько от недельного лимита можно тратить **в день**, чтобы хватило до сброса (100 % / 7 дней → 14 %). Падает с расходом, растёт при приближении сброса.
+- **`▣ Gutscheine 2 · bis 30.11., 20:40`** — столько бесплатных сбросов лимита доступно, ближайший истекает в этот момент. Подсказка показывает для каждого дату выдачи и истечения.
 - Цвет символов по **5-часовому лимиту**: **зелёный от 20 %**, **жёлтый 5–19 %**, **красный менее 5 %**.
 - **Лимит исчерпан:** `⊘ Limit · N Gutscheine` — видно, какое окно пустое и есть ли подарочные сбросы.
 - Управление: **клик** открывает страницу использования в новой вкладке, **перетаскивание**
@@ -84,13 +84,13 @@ Three lines, one grid: symbol | label | value | reset time.
 |---|---|---|
 | 1 | ⚡ | 5-hour limit: remaining % · when it resets |
 | 2 | ● | Weekly limit: remaining % · when it resets |
-| 3 | Ø | daily rate: how much of the weekly limit is available **per day** |
+| 3 | ▣ | reset credits: count · expiry of the next one |
 
 When the limit is reached, the numbers stay and line 3 shows the status:
 
 ![Limit reached](docs/badge-limit.png)
 
-- **`Ø Tag`** = `left ÷ days left`, capped at `left`: how much of the weekly limit you may use** per day** to make it last until the reset (100 % / 7 days → 14 %). Drops as you use it, rises as the reset approaches.
+- **`▣ Gutscheine 2 · bis 30.11., 20:40`** = how many free limit resets are available and when the next one expires. The tooltip lists grant and expiry date for each.
 - Symbol colour follows the **5-hour limit**: **green from 20 %**, **yellow 5–19 %**, **red below 5 %**.
 - **Limit reached:** `⊘ Limit · N Gutscheine` — shows which window is empty and whether reset credits are available.
 - Usage: **click** opens the usage page in a new tab, **drag** moves the badge, **tooltip**

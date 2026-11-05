@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.0.29 — 2026-11-05
+
+- **Ø-Zeile entfernt.** Sie war nicht selbsterklärend („10 % wovon?") und ist entfallen.
+- **Dritte Zeile zeigt jetzt die Reset-Gutscheine:** `▣ Gutscheine 2 · bis 30.11., 20:40` —
+  Anzahl und Ablauf des nächsten. Der Tooltip listet für jeden Gutschein Vergabe- und
+  Ablaufdatum (`vergeben 31.10., 20:40 · läuft ab 30.11., 20:40`).
+- `parseResetCredits` liefert dafür `items[]` mit `grantedAt`/`expiresAt`, sortiert nach Ablauf.
+
 ## 1.0.28 — 2026-11-04
 
 - Die Ø-Zeile bekommt ein Label: `Ø Tag 14%` statt `Ø 14%` — im Raster unter `5h`/`Wo.`.

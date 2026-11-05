@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xCodex Costs
 // @namespace    https://github.com/immerzu
-// @version      1.0.28
+// @version      1.0.29
 // @description  Zeigt das 5-Stunden-Limit und das wöchentliche Limit des ChatGPT-Kontos als schwebendes Badge auf chatgpt.com. Kein API-Key, keine Modellaufrufe — liest nur die Werte, die die eigene Nutzungsseite selbst abruft.
 // @description:en  Shows the 5-hour limit and the weekly limit of the ChatGPT account as a floating badge on chatgpt.com. No API key and no model calls — it only reads the values your own usage page fetches.
 // @description:ru  Показывает 5-часовой лимит и недельный лимит аккаунта ChatGPT в виде плавающего бейджа на chatgpt.com. Без API-ключа и вызовов моделей — читает только значения, которые запрашивает ваша страница использования.
@@ -191,40 +191,22 @@
     }
 
     /**
-     * „Pace" des Wochenfensters: wie viel Prozent des Wochenkontingents **heute noch**
-     * drin sind, wenn der Rest gleichmäßig über die verbleibende Zeit verteilt wird.
-     *
-     *   Ø = übrig / Resttage (bis reset_at), höchstens `übrig`
-     *
-     * Das ist das Budget für die **nächsten 24 Stunden ab jetzt** — nicht für den
-     * Kalendertag. Vergangene Stunden zählen nicht mit, sonst würde jemand bestraft,
-     * der den Tag noch gar nicht genutzt hat. Am letzten Tag greift der Deckel:
-     * 3 % übrig bei 0,5 Tagen → 3 %, nicht 6 %. Ohne Wochendaten oder nach dem Reset:
-     * null bzw. 0.
-     */
-    function paceLeft(data, now) {
-        const w = data && data.secondary;
-        if (!w || !w.resetAt) return null;
-        const t = Number.isFinite(Number(now)) ? Number(now) : Date.now();
-        if (!(w.resetAt > t)) return 0;
-        const restTage = (w.resetAt - t) / 86400000;
-        if (!(restTage > 0)) return 0;
-        return Math.max(0, Math.min(w.left, w.left / restTage));
-    }
-
-    /**
      * Antwort von /backend-api/wham/rate-limit-reset-credits auswerten.
-     * Liefert die Anzahl verfügbarer Gutscheine und den frühesten Ablauf.
+     * Liefert die verfügbaren Gutscheine mit Vergabe- und Ablaufdatum, sortiert nach Ablauf.
      */
     function parseResetCredits(json) {
         const list = json && Array.isArray(json.credits) ? json.credits : [];
-        const verfuegbar = list.filter((c) => c && c.status === 'available');
-        const zeiten = verfuegbar
-            .map((c) => Date.parse(c.expires_at))
-            .filter((t) => Number.isFinite(t));
+        const items = list
+            .filter((c) => c && c.status === 'available')
+            .map((c) => ({
+                grantedAt: Number.isFinite(Date.parse(c.granted_at)) ? Date.parse(c.granted_at) : null,
+                expiresAt: Number.isFinite(Date.parse(c.expires_at)) ? Date.parse(c.expires_at) : null
+            }))
+            .sort((a, b) => (a.expiresAt || Infinity) - (b.expiresAt || Infinity));
         return {
-            count: verfuegbar.length,
-            nextExpiry: zeiten.length ? Math.min.apply(null, zeiten) : null
+            count: items.length,
+            items,
+            nextExpiry: items.length && items[0].expiresAt ? items[0].expiresAt : null
         };
     }
 
@@ -246,11 +228,11 @@
      * Inhalt des Badges in vier Spalten: Symbol | Label | Wert | Reset.
      * Dadurch stehen Labels, Prozentwerte und Reset-Zeiten zeilenweise untereinander.
      *
-     * Im Limit-Fall bleiben die Zahlen stehen (so sieht man, welches Fenster leer ist);
-     * die dritte Zeile trägt dann den Status statt des Ø-Werts.
+     * Die dritte Zeile zeigt die Reset-Gutscheine (Anzahl + nächster Ablauf) oder —
+     * wenn das Limit erreicht ist — den Limit-Status.
      */
-    function badgeParts(data, now) {
-        if (!data) return { top: { label: '', value: '…', reset: '' }, bottom: null, pace: null, status: null };
+    function badgeParts(data) {
+        if (!data) return { top: { label: '', value: '…', reset: '' }, bottom: null, status: null, credits: null };
         const resetW = data.secondary && data.secondary.resetAt ? '· ' + fmtReset(data.secondary.resetAt) : '';
         const resetH = data.primary && data.primary.resetAt ? '· ' + fmtReset(data.primary.resetAt) : '';
         const top = {
@@ -263,12 +245,16 @@
             value: data.secondary ? Math.round(data.secondary.left) + '%' : '–',
             reset: resetW
         };
+        const n = data.resetCredits > 0 ? data.resetCredits : 0;
+        const credits = n > 0
+            ? { label: n === 1 ? 'Gutschein' : 'Gutscheine', value: String(n), extra: data.resetExpiry ? '· bis ' + fmtDate(data.resetExpiry) : '' }
+            : null;
+
         if (data.limitReached) {
-            const n = data.resetCredits;
             const extra = n > 0 ? '· ' + n + (n === 1 ? ' Gutschein' : ' Gutscheine') : '';
-            return { top, bottom, pace: null, status: { text: 'Limit', extra } };
+            return { top, bottom, status: { text: 'Limit', extra }, credits };
         }
-        return { top, bottom, pace: paceLeft(data, now), status: null };
+        return { top, bottom, status: null, credits };
     }
 
     // #endregion PURE
@@ -355,6 +341,7 @@
             if (g.status === 200) {
                 const info = parseResetCredits(g.json);
                 data.resetExpiry = info.nextExpiry;
+                data.resetItems = info.items;
             }
         }
         return { ok: true, data };
@@ -480,7 +467,7 @@
         const l2val = mk('l2val', 'font-variant-numeric:tabular-nums', '2/3');
         const l2reset = mk('l2reset', 'opacity:0.85', '2/4');
         const paceIcon = mk('paceicon', 'justify-self:center;opacity:0.75', '3/1');
-        paceIcon.textContent = 'Ø';
+        paceIcon.textContent = '▣';
         const statLabel = mk('statlabel', '', '3/2');
         const paceVal = mk('paceval', 'font-variant-numeric:tabular-nums', '3/3');
         const statExtra = mk('statextra', 'opacity:0.85', '3/4');
@@ -505,7 +492,7 @@
             dot.style.background = color;
             dot.style.boxShadow = view.kind === 'ok' ? '0 0 6px rgba(61,220,132,0.6)' : 'none';
         }
-        const parts = view.parts || { top: { label: '', value: '…', reset: '' }, bottom: null, pace: null };
+        const parts = view.parts || { top: { label: '', value: '…', reset: '' }, bottom: null, status: null, credits: null };
         const set = (role, v) => {
             const n = el.querySelector('[data-role="' + role + '"]');
             if (n) n.textContent = v;
@@ -518,16 +505,16 @@
         set('l2label', b.label);
         set('l2val', b.value);
         set('l2reset', b.reset || '');
-        const hasPace = parts.pace !== null && parts.pace !== undefined;
         const hasStatus = !!parts.status;
-        set('paceval', hasPace ? Math.round(parts.pace) + '%' : '');
-        set('statlabel', hasStatus ? parts.status.text : (hasPace ? 'Tag' : ''));
-        set('statextra', hasStatus ? (parts.status.extra || '') : '');
+        const hasCredits = !!parts.credits;
+        set('paceval', hasStatus ? '' : (hasCredits ? parts.credits.value : ''));
+        set('statlabel', hasStatus ? parts.status.text : (hasCredits ? parts.credits.label : ''));
+        set('statextra', hasStatus ? (parts.status.extra || '') : (hasCredits ? (parts.credits.extra || '') : ''));
         const pa = el.querySelector('[data-role="paceicon"]');
         if (pa) {
-            const show = hasPace || hasStatus;
+            const show = hasStatus || hasCredits;
             pa.style.display = show ? '' : 'none';
-            pa.textContent = hasStatus ? '⊘' : 'Ø';
+            pa.textContent = hasStatus ? '⊘' : '▣';
             pa.style.color = hasStatus ? COLORS.crit : '';
         }
         const bolt = el.querySelector('[data-role="bolt"]');
@@ -627,20 +614,17 @@
         lines.push('');
         lines.push.apply(lines, windowLines(longLabel(data.primary, '5-Stunden-Limit'), data.primary));
         lines.push.apply(lines, windowLines(longLabel(data.secondary, 'Wöchentliches Limit'), data.secondary));
-        const pace = paceLeft(data, Date.now());
-        if (pace !== null) {
-            const restMs = data.secondary && data.secondary.resetAt ? data.secondary.resetAt - Date.now() : 0;
-            const restTage = restMs / 86400000;
-            const rate = restMs > 0 && data.secondary ? data.secondary.left / restTage : 0;
-            lines.push('Ø pro Tag: ' + Math.round(pace) + ' % von 100 % — '
-                + (data.secondary.left | 0) + ' % Rest auf ' + restTage.toFixed(1).replace('.', ',') + ' Tage'
-                + ' (Tagesrate ' + rate.toFixed(1).replace('.', ',') + ' %)');
-        }
         lines.push('');
         lines.push('Credits: ' + (data.hasCredits ? (data.creditBalance || 'vorhanden') : 'keine'));
-        if (data.resetCredits !== null) {
-            lines.push('Reset-Gutscheine: ' + data.resetCredits + ' verfügbar'
-                + (data.resetExpiry ? ' (nächster Ablauf ' + fmtDate(data.resetExpiry) + ')' : ''));
+        if (data.resetItems && data.resetItems.length) {
+            lines.push('Reset-Gutscheine (' + data.resetItems.length + '):');
+            data.resetItems.forEach((c, i) => {
+                lines.push('  ' + (i + 1) + '. '
+                    + (c.grantedAt ? 'vergeben ' + fmtDate(c.grantedAt) : 'vergeben –')
+                    + ' · läuft ab ' + (c.expiresAt ? fmtDate(c.expiresAt) : '–'));
+            });
+        } else if (data.resetCredits !== null) {
+            lines.push('Reset-Gutscheine: keine');
         }
         lines.push('Aktualisiert: ' + relTime(at));
         lines.push('');
@@ -676,7 +660,7 @@
     function authView(note) {
         return {
             kind: 'crit',
-            parts: { top: { label: '', value: 'Login nötig', reset: '' }, bottom: null, pace: null, status: null },
+            parts: { top: { label: '', value: 'Login nötig', reset: '' }, bottom: null, status: null, credits: null },
             title: 'Kein gültiger ChatGPT-Login in diesem Browser.\n' + (note ? '(' + note + ')\n' : '') +
                 '\nBitte auf chatgpt.com anmelden — danach aktualisiert sich das Badge selbst.'
         };
@@ -685,7 +669,7 @@
     function errorView(note) {
         return {
             kind: 'crit',
-            parts: { top: { label: '', value: (note || 'Fehler'), reset: '' }, bottom: null, pace: null, status: null },
+            parts: { top: { label: '', value: (note || 'Fehler'), reset: '' }, bottom: null, status: null, credits: null },
             title: 'Die Planlimits konnten nicht geladen werden:\n' + (note || 'unbekannter Fehler')
         };
     }
@@ -735,7 +719,7 @@
             snapshot = saved;
             render(freshView(snapshot));
         } else {
-            render({ kind: 'none', parts: { top: { label: '', value: 'lädt …', reset: '' }, bottom: null, pace: null, status: null }, title: 'Planlimits werden geladen …' });
+            render({ kind: 'none', parts: { top: { label: '', value: 'lädt …', reset: '' }, bottom: null, status: null, credits: null }, title: 'Planlimits werden geladen …' });
         }
 
         refresh('start');
