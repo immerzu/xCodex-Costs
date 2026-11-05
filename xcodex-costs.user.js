@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xCodex Costs
 // @namespace    https://github.com/immerzu
-// @version      1.0.29
+// @version      1.0.31
 // @description  Zeigt das 5-Stunden-Limit und das wöchentliche Limit des ChatGPT-Kontos als schwebendes Badge auf chatgpt.com. Kein API-Key, keine Modellaufrufe — liest nur die Werte, die die eigene Nutzungsseite selbst abruft.
 // @description:en  Shows the 5-hour limit and the weekly limit of the ChatGPT account as a floating badge on chatgpt.com. No API key and no model calls — it only reads the values your own usage page fetches.
 // @description:ru  Показывает 5-часовой лимит и недельный лимит аккаунта ChatGPT в виде плавающего бейджа на chatgpt.com. Без API-ключа и вызовов моделей — читает только значения, которые запрашивает ваша страница использования.
@@ -224,6 +224,18 @@
         }
     }
 
+    /** „30.11." — nur Tag und Monat, für die schmale Gutschein-Zeile. */
+    function fmtDay(ms) {
+        const t = Number(ms);
+        if (!Number.isFinite(t) || t <= 0) return '';
+        try {
+            const s = new Date(t).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+            return /\.$/.test(s) ? s : s + '.';
+        } catch (e) {
+            return '';
+        }
+    }
+
     /**
      * Inhalt des Badges in vier Spalten: Symbol | Label | Wert | Reset.
      * Dadurch stehen Labels, Prozentwerte und Reset-Zeiten zeilenweise untereinander.
@@ -247,7 +259,7 @@
         };
         const n = data.resetCredits > 0 ? data.resetCredits : 0;
         const credits = n > 0
-            ? { label: n === 1 ? 'Gutschein' : 'Gutscheine', value: String(n), extra: data.resetExpiry ? '· bis ' + fmtDate(data.resetExpiry) : '' }
+            ? { text: (n === 1 ? 'Gutschein' : '1. Gutschein') + (data.resetExpiry ? ' · gültig bis ' + fmtDay(data.resetExpiry) : '') }
             : null;
 
         if (data.limitReached) {
@@ -507,9 +519,11 @@
         set('l2reset', b.reset || '');
         const hasStatus = !!parts.status;
         const hasCredits = !!parts.credits;
-        set('paceval', hasStatus ? '' : (hasCredits ? parts.credits.value : ''));
-        set('statlabel', hasStatus ? parts.status.text : (hasCredits ? parts.credits.label : ''));
-        set('statextra', hasStatus ? (parts.status.extra || '') : (hasCredits ? (parts.credits.extra || '') : ''));
+        set('paceval', hasStatus ? '' : '');
+        set('statlabel', hasStatus ? parts.status.text : (hasCredits ? parts.credits.text : ''));
+        const sl = el.querySelector('[data-role="statlabel"]');
+        if (sl) sl.style.gridArea = hasStatus ? '3/2' : '3/2/4/5';
+        set('statextra', hasStatus ? (parts.status.extra || '') : '');
         const pa = el.querySelector('[data-role="paceicon"]');
         if (pa) {
             const show = hasStatus || hasCredits;

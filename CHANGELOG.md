@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 1.0.31 — 2026-11-05
+
+- Gutschein-Zeile nennt jetzt den **ersten Gutschein mit Gültigkeit** statt nur der Anzahl:
+  `▣ 1. Gutschein · gültig bis 30.11.` — der Text läuft über die Spalten 2–4, die Zahlen
+  darüber bleiben bündig.
+
+## 1.0.30 — 2026-11-05
+
+- Gutschein-Zeile kompakter: Ablauf nur als Datum (`· 30.11.`) statt `· bis 30.11., 20:40`.
+  Badge 188 px statt 244 px; Uhrzeit und Vergabedatum stehen weiter im Tooltip.
+
 ## 1.0.29 — 2026-11-05
 
 - **Ø-Zeile entfernt.** Sie war nicht selbsterklärend („10 % wovon?") und ist entfallen.

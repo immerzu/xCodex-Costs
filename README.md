@@ -23,7 +23,7 @@ Ist das Limit erreicht, bleiben die Zahlen stehen und Zeile 3 zeigt den Status:
 
 ![Limit erreicht](docs/badge-limit.png)
 
-- **`▣ Gutscheine 2 · bis 30.11., 20:40`** = so viele kostenlose Limit-Resets liegen bereit, der nächste verfällt zu diesem Zeitpunkt. Der Tooltip listet für jeden Gutschein Vergabe- und Ablaufdatum.
+- **`▣ 1. Gutschein · gültig bis 30.11.`** = so viele kostenlose Limit-Resets liegen bereit, der nächste verfällt zu diesem Zeitpunkt. Der Tooltip listet für jeden Gutschein Vergabe- und Ablaufdatum.
 - Farbe der Symbole nach dem **5-Stunden-Limit**: **grün ab 20 %**, **gelb 5–19 %**, **rot unter 5 %**.
 - **Limit erreicht:** `⊘ Limit · N Gutscheine` — man sieht, welches Fenster leer ist und ob
   Reset-Gutscheine bereitliegen.
@@ -57,7 +57,7 @@ startet dort **kein** Userscript und das Badge bleibt unsichtbar.
 
 ![Лимит исчерпан](docs/badge-limit.png)
 
-- **`▣ Gutscheine 2 · bis 30.11., 20:40`** — столько бесплатных сбросов лимита доступно, ближайший истекает в этот момент. Подсказка показывает для каждого дату выдачи и истечения.
+- **`▣ 1. Gutschein · gültig bis 30.11.`** — столько бесплатных сбросов лимита доступно, ближайший истекает в этот момент. Подсказка показывает для каждого дату выдачи и истечения.
 - Цвет символов по **5-часовому лимиту**: **зелёный от 20 %**, **жёлтый 5–19 %**, **красный менее 5 %**.
 - **Лимит исчерпан:** `⊘ Limit · N Gutscheine` — видно, какое окно пустое и есть ли подарочные сбросы.
 - Управление: **клик** открывает страницу использования в новой вкладке, **перетаскивание**
@@ -90,7 +90,7 @@ When the limit is reached, the numbers stay and line 3 shows the status:
 
 ![Limit reached](docs/badge-limit.png)
 
-- **`▣ Gutscheine 2 · bis 30.11., 20:40`** = how many free limit resets are available and when the next one expires. The tooltip lists grant and expiry date for each.
+- **`▣ 1. Gutschein · gültig bis 30.11.`** = how many free limit resets are available and when the next one expires. The tooltip lists grant and expiry date for each.
 - Symbol colour follows the **5-hour limit**: **green from 20 %**, **yellow 5–19 %**, **red below 5 %**.
 - **Limit reached:** `⊘ Limit · N Gutscheine` — shows which window is empty and whether reset credits are available.
 - Usage: **click** opens the usage page in a new tab, **drag** moves the badge, **tooltip**
