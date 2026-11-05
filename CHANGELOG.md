@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.0.32 — 2026-11-05
+
+- Dritte Zeile nur noch als Hinweis: `▣ Gutscheine verfügbar` (bzw. `Gutschein verfügbar`).
+  Anzahl, Vergabe- und Ablaufdatum stehen ausschließlich im Tooltip. Badge 159 px breit.
+
 ## 1.0.31 — 2026-11-05
 
 - Gutschein-Zeile nennt jetzt den **ersten Gutschein mit Gültigkeit** statt nur der Anzahl:

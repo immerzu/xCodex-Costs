@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xCodex Costs
 // @namespace    https://github.com/immerzu
-// @version      1.0.31
+// @version      1.0.32
 // @description  Zeigt das 5-Stunden-Limit und das wöchentliche Limit des ChatGPT-Kontos als schwebendes Badge auf chatgpt.com. Kein API-Key, keine Modellaufrufe — liest nur die Werte, die die eigene Nutzungsseite selbst abruft.
 // @description:en  Shows the 5-hour limit and the weekly limit of the ChatGPT account as a floating badge on chatgpt.com. No API key and no model calls — it only reads the values your own usage page fetches.
 // @description:ru  Показывает 5-часовой лимит и недельный лимит аккаунта ChatGPT в виде плавающего бейджа на chatgpt.com. Без API-ключа и вызовов моделей — читает только значения, которые запрашивает ваша страница использования.
@@ -259,7 +259,7 @@
         };
         const n = data.resetCredits > 0 ? data.resetCredits : 0;
         const credits = n > 0
-            ? { text: (n === 1 ? 'Gutschein' : '1. Gutschein') + (data.resetExpiry ? ' · gültig bis ' + fmtDay(data.resetExpiry) : '') }
+            ? { text: n === 1 ? 'Gutschein verfügbar' : 'Gutscheine verfügbar' }
             : null;
 
         if (data.limitReached) {

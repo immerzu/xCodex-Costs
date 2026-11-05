@@ -154,11 +154,11 @@ eq(PURE.badgeParts({ ...reached, resetCredits: 1 }).status.extra, '· 1 Gutschei
 eq(PURE.badgeParts(null).top.value, '…', 'ohne Daten');
 
 const cr = PURE.badgeParts(d).credits;
-eq(/^1\. Gutschein( · gültig bis \d{2}\.\d{2}\.)?$/.test(cr.text), true, 'Gutschein-Zeile: ' + cr.text);
+eq(cr.text, 'Gutscheine verfügbar', 'Gutschein-Zeile: ' + cr.text);
 
-eq(PURE.badgeParts({ ...d, resetCredits: 1 }).credits.text, 'Gutschein', 'Einzahl bei 1');
+eq(PURE.badgeParts({ ...d, resetCredits: 1 }).credits.text, 'Gutschein verfügbar', 'Einzahl bei 1');
 eq(PURE.badgeParts({ ...d, resetCredits: 0 }).credits, null, 'ohne Gutscheine → keine Zeile');
-eq(PURE.badgeParts({ ...d, resetExpiry: Date.parse('2026-11-30T19:40:33Z') }).credits.text, '1. Gutschein · gültig bis 30.11.', 'Ablauf in der Zeile');
+
  eq(PURE.fmtDay(Date.parse('2026-11-30T19:40:33Z')), '30.11.', 'fmtDay');
  eq(PURE.fmtDay(0), '', 'fmtDay 0 → leer');
 
