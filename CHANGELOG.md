@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.0.37 — 2026-11-09
+
+- Credit-Wert mit Präfix **`CR`** statt `◈` und **rechtsbündig** am Badge-Rand:
+  `⊘ Limit            CR 212`. Ohne Limit/Gutscheine: `Credits            CR 212`.
+
 ## 1.0.36 — 2026-11-09
 
 - **Credits rechts in der dritten Zeile** statt eigener vierter Zeile: `⊘ Limit    ◈ 212`.

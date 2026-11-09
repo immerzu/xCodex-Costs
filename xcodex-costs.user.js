@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xCodex Costs
 // @namespace    https://github.com/immerzu
-// @version      1.0.36
+// @version      1.0.37
 // @description  Zeigt das 5-Stunden-Limit und das wöchentliche Limit des ChatGPT-Kontos als schwebendes Badge auf chatgpt.com. Kein API-Key, keine Modellaufrufe — liest nur die Werte, die die eigene Nutzungsseite selbst abruft.
 // @description:en  Shows the 5-hour limit and the weekly limit of the ChatGPT account as a floating badge on chatgpt.com. No API key and no model calls — it only reads the values your own usage page fetches.
 // @description:ru  Показывает 5-часовой лимит и недельный лимит аккаунта ChatGPT в виде плавающего бейджа на chatgpt.com. Без API-ключа и вызовов моделей — читает только значения, которые запрашивает ваша страница использования.
@@ -494,7 +494,7 @@
         paceIcon.textContent = '▣';
         const statLabel = mk('statlabel', '', '3/2');
         const paceVal = mk('paceval', 'font-variant-numeric:tabular-nums', '3/3');
-        const statExtra = mk('statextra', 'opacity:0.85', '3/4');
+        const statExtra = mk('statextra', 'opacity:0.85;justify-self:end', '3/4');
 
 
         [bolt, l1label, l1val, l1reset, dot, l2label, l2val, l2reset,
@@ -537,15 +537,15 @@
         if (hasStatus) {
             set('statlabel', parts.status.text);
             set('paceval', '');
-            set('statextra', hasBalance ? '◈ ' + parts.balance.text : (parts.status.extra || ''));
+            set('statextra', hasBalance ? 'CR ' + parts.balance.text : (parts.status.extra || ''));
         } else if (hasCredits) {
             set('statlabel', parts.credits.text);
             set('paceval', 'verfügbar');
-            set('statextra', hasBalance ? '◈ ' + parts.balance.text : '');
+            set('statextra', hasBalance ? 'CR ' + parts.balance.text : '');
         } else if (hasBalance) {
             set('statlabel', 'Credits');
-            set('paceval', parts.balance.text);
-            set('statextra', '');
+            set('paceval', '');
+            set('statextra', 'CR ' + parts.balance.text);
         } else {
             set('statlabel', '');
             set('paceval', '');
@@ -554,10 +554,11 @@
 
         const pa = el.querySelector('[data-role="paceicon"]');
         if (pa) {
-            pa.style.display = (hasStatus || hasCredits || hasBalance) ? '' : 'none';
-            pa.textContent = hasStatus ? '⊘' : (hasCredits ? '▣' : '◈');
+            pa.textContent = hasStatus ? '⊘' : '▣';
             pa.style.color = hasStatus ? COLORS.crit : '';
-        }        const bolt = el.querySelector('[data-role="bolt"]');
+            pa.style.display = (hasStatus || hasCredits) ? '' : 'none';
+        }
+        const bolt = el.querySelector('[data-role="bolt"]');
         if (bolt) bolt.style.color = color;
         el.title = view.title;
         el.style.opacity = (view.kind === 'ok' || view.kind === 'warn') ? '0.94' : '0.8';
