@@ -17,8 +17,7 @@ Drei Zeilen, ein Raster: Symbol | Label | Wert | Reset-Zeitpunkt.
 |---|---|---|
 | 1 | ⚡ | 5-Stunden-Limit: Rest in % · Zeitpunkt der Rücksetzung |
 | 2 | ● | Wöchentliches Limit: Rest in % · Zeitpunkt der Rücksetzung |
-| 3 | ▣ | Reset-Gutscheine: Hinweis, wenn welche verfügbar sind |
-| 4 | ◈ | Credits: aktueller Kontostand |
+| 3 | ▣ / ◈ | Reset-Gutscheine (Hinweis) bzw. Credits — beide rechts in dieser Zeile |
 
 Ist das Limit erreicht, bleiben die Zahlen stehen und Zeile 3 zeigt den Status:
 

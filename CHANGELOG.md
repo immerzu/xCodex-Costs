@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.0.36 — 2026-11-09
+
+- **Credits rechts in der dritten Zeile** statt eigener vierter Zeile: `⊘ Limit    ◈ 212`.
+  Ohne Limit und ohne Gutscheine steht dort `◈ Credits 212`. Damit ist das Badge wieder 58 px hoch.
+
 ## 1.0.33 — 2026-11-09
 
 - **Vierte Zeile: Credits.** `◈ Credits 212` zeigt den Credit-Kontostand aus `credits.balance`.

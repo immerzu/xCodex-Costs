@@ -162,9 +162,9 @@ eq(PURE.badgeParts({ ...d, hasCredits: false, creditValue: 0 }).balance, null, '
 eq(PURE.fmtCredits(0), '', 'fmtCredits 0 → leer');
 
 const cr = PURE.badgeParts(d).credits;
-eq(cr.text, 'Gutscheine verfügbar', 'Gutschein-Zeile: ' + cr.text);
+eq(cr.text, 'Gutscheine', 'Gutschein-Zeile: ' + cr.text);
 
-eq(PURE.badgeParts({ ...d, resetCredits: 1 }).credits.text, 'Gutschein verfügbar', 'Einzahl bei 1');
+eq(PURE.badgeParts({ ...d, resetCredits: 1 }).credits.text, 'Gutschein', 'Einzahl bei 1');
 eq(PURE.badgeParts({ ...d, resetCredits: 0 }).credits, null, 'ohne Gutscheine → keine Zeile');
 
  eq(PURE.fmtDay(Date.parse('2026-11-30T19:40:33Z')), '30.11.', 'fmtDay');

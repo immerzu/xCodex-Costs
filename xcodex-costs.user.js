@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xCodex Costs
 // @namespace    https://github.com/immerzu
-// @version      1.0.33
+// @version      1.0.36
 // @description  Zeigt das 5-Stunden-Limit und das wöchentliche Limit des ChatGPT-Kontos als schwebendes Badge auf chatgpt.com. Kein API-Key, keine Modellaufrufe — liest nur die Werte, die die eigene Nutzungsseite selbst abruft.
 // @description:en  Shows the 5-hour limit and the weekly limit of the ChatGPT account as a floating badge on chatgpt.com. No API key and no model calls — it only reads the values your own usage page fetches.
 // @description:ru  Показывает 5-часовой лимит и недельный лимит аккаунта ChatGPT в виде плавающего бейджа на chatgpt.com. Без API-ключа и вызовов моделей — читает только значения, которые запрашивает ваша страница использования.
@@ -269,7 +269,7 @@
         };
         const n = data.resetCredits > 0 ? data.resetCredits : 0;
         const credits = n > 0
-            ? { text: n === 1 ? 'Gutschein verfügbar' : 'Gutscheine verfügbar' }
+            ? { text: n === 1 ? 'Gutschein' : 'Gutscheine' }
             : null;
         const balance = data.hasCredits && data.creditValue !== null && data.creditValue > 0
             ? { text: fmtCredits(data.creditValue) } : null;
@@ -496,13 +496,9 @@
         const paceVal = mk('paceval', 'font-variant-numeric:tabular-nums', '3/3');
         const statExtra = mk('statextra', 'opacity:0.85', '3/4');
 
-        const balIcon = mk('balicon', 'justify-self:center;opacity:0.75', '4/1');
-        balIcon.textContent = '◈';
-        const balLabel = mk('ballabel', '', '4/2');
-        const balVal = mk('balval', 'font-variant-numeric:tabular-nums', '4/3');
 
         [bolt, l1label, l1val, l1reset, dot, l2label, l2val, l2reset,
-            paceIcon, statLabel, paceVal, statExtra, balIcon, balLabel, balVal].forEach((n) => text.appendChild(n));
+            paceIcon, statLabel, paceVal, statExtra].forEach((n) => text.appendChild(n));
         badgeEl.appendChild(text);
         document.body.appendChild(badgeEl);
 
@@ -536,24 +532,32 @@
         set('l2reset', b.reset || '');
         const hasStatus = !!parts.status;
         const hasCredits = !!parts.credits;
-        set('paceval', hasStatus ? '' : '');
-        set('statlabel', hasStatus ? parts.status.text : (hasCredits ? parts.credits.text : ''));
-        const sl = el.querySelector('[data-role="statlabel"]');
-        if (sl) sl.style.gridArea = hasStatus ? '3/2' : '3/2/4/5';
-        set('statextra', hasStatus ? (parts.status.extra || '') : '');
+        const hasBalance = !!parts.balance;
+
+        if (hasStatus) {
+            set('statlabel', parts.status.text);
+            set('paceval', '');
+            set('statextra', hasBalance ? '◈ ' + parts.balance.text : (parts.status.extra || ''));
+        } else if (hasCredits) {
+            set('statlabel', parts.credits.text);
+            set('paceval', 'verfügbar');
+            set('statextra', hasBalance ? '◈ ' + parts.balance.text : '');
+        } else if (hasBalance) {
+            set('statlabel', 'Credits');
+            set('paceval', parts.balance.text);
+            set('statextra', '');
+        } else {
+            set('statlabel', '');
+            set('paceval', '');
+            set('statextra', '');
+        }
+
         const pa = el.querySelector('[data-role="paceicon"]');
         if (pa) {
-            const show = hasStatus || hasCredits;
-            pa.style.display = show ? '' : 'none';
-            pa.textContent = hasStatus ? '⊘' : '▣';
+            pa.style.display = (hasStatus || hasCredits || hasBalance) ? '' : 'none';
+            pa.textContent = hasStatus ? '⊘' : (hasCredits ? '▣' : '◈');
             pa.style.color = hasStatus ? COLORS.crit : '';
-        }
-        const hasBalance = !!parts.balance;
-        set('ballabel', hasBalance ? 'Credits' : '');
-        set('balval', hasBalance ? parts.balance.text : '');
-        const bi = el.querySelector('[data-role="balicon"]');
-        if (bi) bi.style.display = hasBalance ? '' : 'none';
-        const bolt = el.querySelector('[data-role="bolt"]');
+        }        const bolt = el.querySelector('[data-role="bolt"]');
         if (bolt) bolt.style.color = color;
         el.title = view.title;
         el.style.opacity = (view.kind === 'ok' || view.kind === 'warn') ? '0.94' : '0.8';
