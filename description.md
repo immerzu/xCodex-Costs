@@ -3,6 +3,7 @@ Zeigt das **5-Stunden-Limit** und das **wöchentliche Limit** des ChatGPT-Kontos
 - Läuft nur auf `chatgpt.com`.
 - Drei Zeilen — `⚡ 5h 77% · Mo 16:48`, `● Wo. 17% · Mi 08:08` und `▣ Gutscheine verfügbar`: jeweils der Rest in Prozent und der Zeitpunkt, an dem das Fenster zurückgesetzt wird.
 - **`▣ Gutscheine verfügbar`** = wie viele kostenlose Limit-Resets bereitliegen und wann der nächste verfällt (Datum; Uhrzeit und Vergabe im Tooltip). Der Tooltip nennt für jeden Gutschein Vergabe- und Ablaufdatum.
+- Vierte Zeile `◈ Credits 212` = aktueller Credit-Kontostand (gekaufte Credits), sofern vorhanden.
 - Farbe der Symbole richtet sich nach dem 5-Stunden-Limit: grün ab 20 %, gelb 5–19 %, rot unter 5 %.
 - **Limit erreicht:** Die Zahlen bleiben stehen, die dritte Zeile zeigt `⊘ Limit · N Gutscheine` — so sieht man, welches Fenster leer ist, und ob Reset-Gutscheine bereitliegen.
 - **Kein API-Key, keine Modellaufrufe, keine Token-Kosten:** Es liest nur die Endpunkte, die die Nutzungsseite selbst aufruft.

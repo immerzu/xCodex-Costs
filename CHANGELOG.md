@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.0.33 — 2026-11-09
+
+- **Vierte Zeile: Credits.** `◈ Credits 212` zeigt den Credit-Kontostand aus `credits.balance`.
+  Format: ganzzahlig ab 100, sonst eine bzw. zwei Dezimalen (`12,5` / `0,80`).
+  Ohne Credits entfällt die Zeile.
+- Tooltip: `Credits: 212` statt `keine`.
+
 ## 1.0.32 — 2026-11-05
 
 - Dritte Zeile nur noch als Hinweis: `▣ Gutscheine verfügbar` (bzw. `Gutschein verfügbar`).

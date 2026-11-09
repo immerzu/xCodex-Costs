@@ -27,7 +27,7 @@ if (!match) {
 const PURE = new Function(
   `${match[1]}
    return { clamp, windowInfo, parseUsage, shortLabel, longLabel, fmtDur, fmtReset, fmtDate,
-            relTime, severity, badgeParts, parseResetCredits, fmtDay };`,
+            relTime, severity, badgeParts, parseResetCredits, fmtDay, fmtCredits };`,
 )();
 
 // ---------------------------------------------------------------------------
@@ -153,6 +153,14 @@ eq(PURE.badgeParts({ ...reached, resetCredits: 2 }).status.extra, '· 2 Gutschei
 eq(PURE.badgeParts({ ...reached, resetCredits: 1 }).status.extra, '· 1 Gutschein', 'Einzahl bei 1');
 eq(PURE.badgeParts(null).top.value, '…', 'ohne Daten');
 
+const bal = PURE.badgeParts({ ...d, hasCredits: true, creditValue: 212.364975 });
+eq(bal.balance.text, '212', 'Credits-Zeile: gerundet');
+eq(PURE.badgeParts({ ...d, hasCredits: true, creditValue: 12.5 }).balance.text, '12,5', 'Credits: eine Dezimale unter 100');
+ eq(PURE.badgeParts({ ...d, hasCredits: true, creditValue: 99.94 }).balance.text, '99,9', 'Credits: 99,94 → 99,9');
+eq(PURE.badgeParts({ ...d, hasCredits: true, creditValue: 0.8 }).balance.text, '0,80', 'Credits: zwei Dezimalen unter 1');
+eq(PURE.badgeParts({ ...d, hasCredits: false, creditValue: 0 }).balance, null, 'ohne Credits → keine Zeile');
+eq(PURE.fmtCredits(0), '', 'fmtCredits 0 → leer');
+
 const cr = PURE.badgeParts(d).credits;
 eq(cr.text, 'Gutscheine verfügbar', 'Gutschein-Zeile: ' + cr.text);
 
@@ -172,7 +180,8 @@ eq(PURE.badgeParts(ohneReset), {
   top: { label: '5h', value: '80%', reset: '' },
   bottom: { label: 'Wo.', value: '70%', reset: '' },
   status: null,
-  credits: null
+  credits: null,
+  balance: null
 }, 'ohne reset_at → keine Reset-Spalten und kein Ø');
 
 // ---------------------------------------------------------------------------

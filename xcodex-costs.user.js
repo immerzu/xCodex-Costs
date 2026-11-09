@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         xCodex Costs
 // @namespace    https://github.com/immerzu
-// @version      1.0.32
+// @version      1.0.33
 // @description  Zeigt das 5-Stunden-Limit und das wöchentliche Limit des ChatGPT-Kontos als schwebendes Badge auf chatgpt.com. Kein API-Key, keine Modellaufrufe — liest nur die Werte, die die eigene Nutzungsseite selbst abruft.
 // @description:en  Shows the 5-hour limit and the weekly limit of the ChatGPT account as a floating badge on chatgpt.com. No API key and no model calls — it only reads the values your own usage page fetches.
 // @description:ru  Показывает 5-часовой лимит и недельный лимит аккаунта ChatGPT в виде плавающего бейджа на chatgpt.com. Без API-ключа и вызовов моделей — читает только значения, которые запрашивает ваша страница использования.
@@ -112,6 +112,7 @@
             limitReached: !!rl.limit_reached,
             hasCredits: !!(credits && credits.has_credits),
             creditBalance: credits && typeof credits.balance === 'string' ? credits.balance : null,
+            creditValue: credits && Number.isFinite(Number(credits.balance)) ? Number(credits.balance) : null,
             resetCredits: resets && Number.isFinite(Number(resets.available_count))
                 ? Number(resets.available_count) : null
         };
@@ -236,6 +237,15 @@
         }
     }
 
+    /** Credit-Guthaben kompakt: 212 · 12,5 · 0,80 */
+    function fmtCredits(v) {
+        const n = Number(v);
+        if (!Number.isFinite(n) || n <= 0) return '';
+        if (n >= 100) return String(Math.round(n));
+        if (n >= 1) return n.toFixed(1).replace('.', ',');
+        return n.toFixed(2).replace('.', ',');
+    }
+
     /**
      * Inhalt des Badges in vier Spalten: Symbol | Label | Wert | Reset.
      * Dadurch stehen Labels, Prozentwerte und Reset-Zeiten zeilenweise untereinander.
@@ -244,7 +254,7 @@
      * wenn das Limit erreicht ist — den Limit-Status.
      */
     function badgeParts(data) {
-        if (!data) return { top: { label: '', value: '…', reset: '' }, bottom: null, status: null, credits: null };
+        if (!data) return { top: { label: '', value: '…', reset: '' }, bottom: null, status: null, credits: null, balance: null };
         const resetW = data.secondary && data.secondary.resetAt ? '· ' + fmtReset(data.secondary.resetAt) : '';
         const resetH = data.primary && data.primary.resetAt ? '· ' + fmtReset(data.primary.resetAt) : '';
         const top = {
@@ -261,12 +271,14 @@
         const credits = n > 0
             ? { text: n === 1 ? 'Gutschein verfügbar' : 'Gutscheine verfügbar' }
             : null;
+        const balance = data.hasCredits && data.creditValue !== null && data.creditValue > 0
+            ? { text: fmtCredits(data.creditValue) } : null;
 
         if (data.limitReached) {
             const extra = n > 0 ? '· ' + n + (n === 1 ? ' Gutschein' : ' Gutscheine') : '';
-            return { top, bottom, status: { text: 'Limit', extra }, credits };
+            return { top, bottom, status: { text: 'Limit', extra }, credits, balance };
         }
-        return { top, bottom, status: null, credits };
+        return { top, bottom, status: null, credits, balance };
     }
 
     // #endregion PURE
@@ -484,8 +496,13 @@
         const paceVal = mk('paceval', 'font-variant-numeric:tabular-nums', '3/3');
         const statExtra = mk('statextra', 'opacity:0.85', '3/4');
 
+        const balIcon = mk('balicon', 'justify-self:center;opacity:0.75', '4/1');
+        balIcon.textContent = '◈';
+        const balLabel = mk('ballabel', '', '4/2');
+        const balVal = mk('balval', 'font-variant-numeric:tabular-nums', '4/3');
+
         [bolt, l1label, l1val, l1reset, dot, l2label, l2val, l2reset,
-            paceIcon, statLabel, paceVal, statExtra].forEach((n) => text.appendChild(n));
+            paceIcon, statLabel, paceVal, statExtra, balIcon, balLabel, balVal].forEach((n) => text.appendChild(n));
         badgeEl.appendChild(text);
         document.body.appendChild(badgeEl);
 
@@ -504,7 +521,7 @@
             dot.style.background = color;
             dot.style.boxShadow = view.kind === 'ok' ? '0 0 6px rgba(61,220,132,0.6)' : 'none';
         }
-        const parts = view.parts || { top: { label: '', value: '…', reset: '' }, bottom: null, status: null, credits: null };
+        const parts = view.parts || { top: { label: '', value: '…', reset: '' }, bottom: null, status: null, credits: null, balance: null };
         const set = (role, v) => {
             const n = el.querySelector('[data-role="' + role + '"]');
             if (n) n.textContent = v;
@@ -531,6 +548,11 @@
             pa.textContent = hasStatus ? '⊘' : '▣';
             pa.style.color = hasStatus ? COLORS.crit : '';
         }
+        const hasBalance = !!parts.balance;
+        set('ballabel', hasBalance ? 'Credits' : '');
+        set('balval', hasBalance ? parts.balance.text : '');
+        const bi = el.querySelector('[data-role="balicon"]');
+        if (bi) bi.style.display = hasBalance ? '' : 'none';
         const bolt = el.querySelector('[data-role="bolt"]');
         if (bolt) bolt.style.color = color;
         el.title = view.title;
@@ -629,7 +651,7 @@
         lines.push.apply(lines, windowLines(longLabel(data.primary, '5-Stunden-Limit'), data.primary));
         lines.push.apply(lines, windowLines(longLabel(data.secondary, 'Wöchentliches Limit'), data.secondary));
         lines.push('');
-        lines.push('Credits: ' + (data.hasCredits ? (data.creditBalance || 'vorhanden') : 'keine'));
+        lines.push('Credits: ' + (data.hasCredits && data.creditValue > 0 ? fmtCredits(data.creditValue) : 'keine'));
         if (data.resetItems && data.resetItems.length) {
             lines.push('Reset-Gutscheine (' + data.resetItems.length + '):');
             data.resetItems.forEach((c, i) => {
@@ -674,7 +696,7 @@
     function authView(note) {
         return {
             kind: 'crit',
-            parts: { top: { label: '', value: 'Login nötig', reset: '' }, bottom: null, status: null, credits: null },
+            parts: { top: { label: '', value: 'Login nötig', reset: '' }, bottom: null, status: null, credits: null, balance: null },
             title: 'Kein gültiger ChatGPT-Login in diesem Browser.\n' + (note ? '(' + note + ')\n' : '') +
                 '\nBitte auf chatgpt.com anmelden — danach aktualisiert sich das Badge selbst.'
         };
@@ -683,7 +705,7 @@
     function errorView(note) {
         return {
             kind: 'crit',
-            parts: { top: { label: '', value: (note || 'Fehler'), reset: '' }, bottom: null, status: null, credits: null },
+            parts: { top: { label: '', value: (note || 'Fehler'), reset: '' }, bottom: null, status: null, credits: null, balance: null },
             title: 'Die Planlimits konnten nicht geladen werden:\n' + (note || 'unbekannter Fehler')
         };
     }
@@ -733,7 +755,7 @@
             snapshot = saved;
             render(freshView(snapshot));
         } else {
-            render({ kind: 'none', parts: { top: { label: '', value: 'lädt …', reset: '' }, bottom: null, status: null, credits: null }, title: 'Planlimits werden geladen …' });
+            render({ kind: 'none', parts: { top: { label: '', value: 'lädt …', reset: '' }, bottom: null, status: null, credits: null, balance: null }, title: 'Planlimits werden geladen …' });
         }
 
         refresh('start');
